@@ -1,0 +1,245 @@
+<script type="text/javascript">
+function random(x){
+    return Math.floor(Math.random()*x);
+}
+function randomList(n){
+    var i,j;
+    a = [];
+    for(i=0; i<n; i++) a.push(0);
+    for(i=0; i<n; i++){
+        j = random(n);
+        while(a[j]!=0) j = random(n);
+        a[j] = 1+i;
+    }
+    return a;
+}
+var c,ctx;
+function init(){
+    c = document.getElementById("c");
+    ctx = c.getContext("2d");
+    c.width = window.innerWidth-20;
+    c.height = window.innerHeight-50;
+    window.onresize = function(){
+        c.width = window.innerWidth-20;
+        c.height = window.innerHeight-50;
+    }
+    fps = 60;
+    c.scene = {};
+    c.scene.curX = 0;
+    c.scene.curY = 0;
+    c.scene.mouseClick = false;
+    c.scene.mouseDown = false;
+    c.addEventListener('mousemove', function (e) {
+        c.scene.curX = e.clientX;
+        c.scene.curY = e.clientY;
+    });
+    c.addEventListener('mousedown', function (e) {
+        c.scene.mouseClick = true;
+        c.scene.mouseDown = true;
+    });
+    c.addEventListener('touchmove', function (e) {
+        c.scene.curX = e.pageX;
+        c.scene.curY = e.pageY;
+        c.scene.mouseClick = true;
+        c.scene.mouseDown = true;
+    });
+    start();
+	loop();
+}
+function BigNum() {
+    var i;
+    this.arr = [];
+    for(i=0; i<100; i++){
+        this.arr.push(0);
+    }
+    
+    this.set = function(x){
+    var i = 0;
+    while(i<100){
+        this.arr[i] = x.arr[i];
+        i++;
+    }
+    };
+    this.add = function(x){
+    var i = 0;
+    while(i<=98){
+        this.arr[i] += x.arr[i];
+        if(i>=1){
+        if(this.arr[i-1]>=1000){
+            this.arr[i-1] -= 1000;
+            this.arr[i]++;
+        }
+        }
+        i++;
+    }
+    };
+    this.sub = function(x){
+    var i = 0;
+    while(i<=98){
+        this.arr[i] -= x.arr[i];
+        if(this.arr[i]<0){
+            this.arr[i] += 1000;
+            this.arr[i+1]--;
+        }
+        i++;
+    }
+    };
+    this.mul = function(k){
+    var i = 0;
+    var j = 0;
+    while(k<1){
+        k = k*10;
+        j++;
+    }
+    while(i<=98){
+        this.arr[i] = Math.floor(this.arr[i]*k);
+        if(i>=1){
+            this.arr[i] += Math.floor(this.arr[i-1]/1000);
+            if(this.arr[i-1]>=1000){
+            this.arr[i-1] = this.arr[i-1]%1000;
+            }
+        }
+        i++;
+    }
+    i = 0;
+    while(i<=98){
+        this.arr[i] = Math.floor((this.arr[i]+
+        this.arr[i+1]*1000)*Math.pow(10,-j))%1000;
+        i++;
+    }
+    };
+    this.isGt = function(x){
+    var i = 99;
+    while(((this.arr[i]<1 && x.arr[i]<1) ||
+    this.arr[i]==x.arr[i]) && i>=1){
+        i--;
+    }
+    if(x.arr[i]<this.arr[i]){
+        return 1;
+    }
+    if(this.arr[i]==x.arr[i]){
+        return 0;
+    }
+    if(this.arr[i]<x.arr[i]){
+        return -1;
+    }
+    };
+    this.numToString = function(){
+    var i = 99;
+    var s = "";
+    while(this.arr[i]<1 && i>1){
+        i--;
+    }
+    s += this.arr[i];
+    i--;
+    if(i>=6){
+        s += ".";
+        if(this.arr[i]<100) s += "0";
+        if(this.arr[i]<10) s += "0";
+        s += this.arr[i];
+        if(this.arr[i-1]<100) s += "0";
+        if(this.arr[i-1]<10) s += "0";
+        s += this.arr[i-1];
+        if(this.arr[i-2]<100) s += "0";
+        if(this.arr[i-2]<10) s += "0";
+        s += this.arr[i-2];
+        s += "e"+(i*3);
+    }else{
+    while(i>=1){
+        s += ",";
+        if(this.arr[i]<100) s += "0";
+        if(this.arr[i]<10) s += "0";
+        s += this.arr[i];
+        i--;
+    }
+    }
+    return s;
+    };
+}
+
+var tem;
+var num,nps;
+var lvl;
+var cost;
+var selX,selY;
+function start(){
+    var i,j;
+    lvl = 1;
+    tem = new BigNum();
+    num = new BigNum();
+    nps = new BigNum();
+    cost = new BigNum();
+    num.arr[1] = 0;
+    nps.arr[1] = 100;
+    cost.set(nps);
+    cost.mul(3);
+    //alert(numToString(nps));
+}
+
+function checkCur(x,y,w,h){
+    return c.scene.curX>=x && c.scene.curX<x+w &&
+        c.scene.curY>=y && c.scene.curY<y+h;
+}
+var delay = 1;
+function update(){
+    var i,j,p,q;
+    if(c.scene.mouseClick){
+		c.scene.mouseClick = false;
+        if(checkCur(500,96,32,32)){
+            if(num.isGt(cost)>=0){
+            num.sub(cost);
+            nps.mul(2);
+            cost.set(nps);
+            cost.mul(3);
+            lvl++;
+            }
+    	}
+    }
+    tem.set(nps);
+    tem.mul(0.016);
+    num.add(tem);
+}
+
+function clear(){
+    ctx.fillStyle = "#666666";
+    ctx.fillRect(0,0,c.width,c.height);
+}
+function drawScr(){
+    var i,j,p,q;
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 1;
+    for(i=0; i<1; i++){
+        for(j=0; j<1; j++){
+            ctx.strokeRect(500+j*32,96+i*32,32,32);
+        }
+    }
+    ctx.textAlign = "right";
+    ctx.font = "16pt Trebuchet MS";
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillText(num.numToString(),480,56);
+    ctx.font = "12pt Trebuchet MS";
+    ctx.fillText(nps.numToString(),480,88);
+    ctx.fillText(cost.numToString(),480,120);
+    ctx.fillText("Lv "+lvl,600,120);
+    ctx.textAlign = "center";
+    ctx.font = "16pt Trebuchet MS";
+    ctx.fillText("+",516,120);
+}
+function draw(){
+    clear();
+    drawScr();
+    for(var obj in c.scene){
+        if(c.scene[obj].type=="nyan" || c.scene[obj].type=="star"){
+            //c.scene[obj].draw();
+        }
+    }
+}
+
+function loop(){
+    update();
+    draw();
+    setTimeout(loop,1000/fps);
+}
+</script>
+<canvas id="c">Your browser does not support the canvas element.</canvas>
+<div>by Alissa Liu v1.01 [<a href="http://flashindo.forumotion.net">Flashindo - Akademi Pembuat Flash</a>]</div>
