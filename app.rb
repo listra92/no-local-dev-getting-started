@@ -23,6 +23,10 @@ get "/sdk" do
   erb :sdk
 end
 
+get "/inc" do
+  erb :inc
+end
+
 get "/create" do
   dashboard_url = 'https://dashboard.heroku.com/'
   match = /(.*?)\.herokuapp\.com/.match(request.host)
