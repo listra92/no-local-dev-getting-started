@@ -19,6 +19,10 @@ get "/contacts" do
   erb :index
 end
 
+get "/sdk" do
+  erb :sdk
+end
+
 get "/create" do
   dashboard_url = 'https://dashboard.heroku.com/'
   match = /(.*?)\.herokuapp\.com/.match(request.host)
