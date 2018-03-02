@@ -1,0 +1,250 @@
+<script type="text/javascript">
+function random(x){
+    return Math.floor(Math.random()*x);
+}
+function randomList(n){
+    var i,j;
+    a = [];
+    for(i=0; i<n; i++) a.push(0);
+    for(i=0; i<n; i++){
+        j = random(n);
+        while(a[j]!=0) j = random(n);
+        a[j] = 1+i;
+    }
+    return a;
+}
+var c,ctx;
+function init(){
+    c = document.getElementById("c");
+    ctx = c.getContext("2d");
+    c.width = window.innerWidth-20;
+    c.height = window.innerHeight-50;
+    window.onresize = function(){
+        c.width = window.innerWidth-20;
+        c.height = window.innerHeight-50;
+    }
+    fps = 30;
+    c.scene = {};
+    c.scene.curX = 0;
+    c.scene.curY = 0;
+    c.scene.mouseClick = false;
+    c.scene.mouseDown = false;
+    c.addEventListener('mousemove', function (e) {
+        c.scene.curX = e.clientX;
+        c.scene.curY = e.clientY;
+    });
+    c.addEventListener('mousedown', function (e) {
+        c.scene.mouseClick = true;
+        c.scene.mouseDown = true;
+    });
+    c.addEventListener('touchmove', function (e) {
+        c.scene.curX = e.pageX;
+        c.scene.curY = e.pageY;
+        c.scene.mouseClick = true;
+        c.scene.mouseDown = true;
+    });
+    start();
+	loop();
+}
+
+var arr;
+var selX,selY;
+var isEnabled;
+var isGuess;
+var guesses;
+function random(x){
+    return Math.floor(Math.random()*x);
+}
+function checkR(u,v,x){
+    var i;
+    var s = true;
+    for(i=0; i<9; i++){
+        if(i!=v) s = (s && arr[u][i]!=x);
+    }
+    return s;
+}
+function checkC(u,v,x){
+    var i;
+    var s = true;
+    for(i=0; i<9; i++){
+        if(i!=u) s = (s && arr[i][v]!=x);
+    }
+    return s;
+}
+function checkS(u,v,x){
+    var i,j;
+    var s = true;
+    for(i=Math.floor(u/3)*3; i<Math.floor(u/3)*3+3; i++){
+        for(j=Math.floor(v/3)*3; j<Math.floor(v/3)*3+3; j++){
+            if(i!=u && j!=v) s = (s && arr[i][j]!=x);
+        }
+    }
+    return s;
+}
+function start(){
+    var i,j;
+    var ran;
+    var ranList;
+    arr = [];
+    selX = 0;
+    selY = 0;
+    isEnabled = [false, false, false, false, false,
+        false, false, false, false];
+    isGuess = [];
+    guesses = [];
+    for(i=0; i<9; i++){
+        arr.push([]);
+        isGuess.push([]);
+        guesses.push([]);
+        for(j=0; j<9; j++){
+    	    arr[i].push(0);
+            isGuess[i].push(false);
+            guesses[i].push([false, false, false, false, false,
+                false, false, false, false]);
+        }
+    }
+    ranList = [];
+    for(i=0; i<9; i++){
+        ranList.push([]);
+        for(j=0; j<9; j++){
+            ranList[i].push(randomList(9));
+            ranList[i][j].push(0);
+            ranList[i][j].push(0);
+        }
+    }
+    for(i=0; i<9; i++){
+        for(j=0; j<9;){
+            arr[i][j] = ranList[i][j][ranList[i][j][10]];
+            while((!checkR(i,j,arr[i][j]) || !checkC(i,j,arr[i][j]) ||
+                !checkS(i,j,arr[i][j])) && ranList[i][j][10]<9){
+                ranList[i][j][10]++;
+                arr[i][j] = ranList[i][j][ranList[i][j][10]];
+            }
+            //alert(arr+"\n"+ranList[i][j]+"\n"+i+""+j+" "+ranList[i][j][10]);
+            if(ranList[i][j][10]==9){
+                ranList[i][j][10] = 0;
+                if(j==0){
+                    i--;
+                    j = 8;
+                }else{
+                    j--;
+                }
+                ranList[i][j][10]++;
+            }else{
+                j++;
+            }
+        }
+    }
+    for(i=0; i<9; i++){
+        for(j=0; j<9; j++){
+    	    if(random(100)<60){
+                arr[i][j] = 0;
+            }
+        }
+    }
+    for(i=0; i<9; i++){
+        isEnabled[i] = (checkR(selY,selX,1+i) && checkC(selY,selX,1+i) &&
+            checkS(selY,selX,1+i));
+    }
+    arr0 = [];
+    for(i=0; i<9; i++){
+        arr0.push([]);
+        for(j=0; j<9; j++){
+    	    arr0[i].push(arr[i][j]);
+        }
+    }
+}
+
+function checkCur(x,y,w,h){
+    return c.scene.curX>=x && c.scene.curX<x+w &&
+        c.scene.curY>=y && c.scene.curY<y+h;
+}
+var delay = 1;
+function update(){
+    var i,j,p,q;
+    if(c.scene.mouseClick){
+		c.scene.mouseClick = false;
+        if(checkCur(32,32,288,288)){
+            selX = Math.floor((c.scene.curX-32)/32);
+            selY = Math.floor((c.scene.curY-32)/32);
+            for(i=0; i<9; i++){
+                isEnabled[i] = (checkR(selY,selX,1+i) &&
+                    checkC(selY,selX,1+i) && checkS(selY,selX,1+i));
+            }
+    	}
+        for(i=0; i<3; i++){
+	        for(j=0; j<3; j++){
+                if(checkCur(128+j*32,352+i*32,32,32) && isEnabled[i*3+j]){
+		            if(isGuess[selY][selX]){
+                        guesses[selY][selX][i*3+j] = true;
+                        arr[selY][selX] = 0;
+                    }else{
+                        if(arr0[selY][selX]==0){
+                        arr[selY][selX] = 1+i*3+j;
+                        for(k=0; k<9; k++) guesses[selY][selX][k] = false;
+                        }
+                    }
+    			}
+    	    }
+	    }
+        if(checkCur(128,448,32,32)){
+            if(arr0[selY][selX]==0){
+                arr[selY][selX] = 0;
+                for(i=0; i<9; i++){
+                guesses[selY][selX][i] = false;
+                }
+            }
+        }
+        if(checkCur(160,448,32,32)){
+            for(i=0; i<9; i++){
+                for(j=0; j<9; j++){
+            	    arr[i][j] = arr0[i][j];
+                    for(k=0; k<9; k++) guesses[i][j][k] = false;
+                }
+            }
+        }
+        if(arr0[selY][selX]==0 && checkCur(192,448,32,32)){
+            isGuess[selY][selX] = !isGuess[selY][selX];
+        }
+    }
+}
+
+function clear(){
+    ctx.fillStyle = "#666666";
+    ctx.fillRect(0,0,c.width,c.height);
+}
+function drawScr(){
+    var i,j,p,q;
+    i=0;j=0;
+    ctx.fillStyle = "#999999";
+    ctx.fillRect(32+selX*32,32+selY*32,32,32);
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(32,32,384,384);
+    ctx.font = "16pt Trebuchet MS";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillText(0,48+j*32,56+i*32);
+    for(i=0; i<9; i++){
+        for(j=0; j<9; j++){
+        }
+    }
+}
+function draw(){
+    clear();
+    drawScr();
+    for(var obj in c.scene){
+        if(c.scene[obj].type=="nyan" || c.scene[obj].type=="star"){
+            //c.scene[obj].draw();
+        }
+    }
+}
+
+function loop(){
+    update();
+    draw();
+    setTimeout(loop,1000/fps);
+}
+</script>
+<canvas id="c">Your browser does not support the canvas element.</canvas>
+<div>by Alissa Liu v1.01 [<a href="http://flashindo.forumotion.net">Flashindo - Akademi Pembuat Flash</a>]</div>
