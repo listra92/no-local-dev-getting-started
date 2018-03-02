@@ -27,6 +27,10 @@ get "/inc" do
   erb :inc
 end
 
+get "/ran" do
+  erb :ran
+end
+
 get "/create" do
   dashboard_url = 'https://dashboard.heroku.com/'
   match = /(.*?)\.herokuapp\.com/.match(request.host)
