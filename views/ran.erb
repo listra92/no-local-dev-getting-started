@@ -155,6 +155,41 @@ function start(){
     }
 }
 
+function GObject(x,y,xscale,yscale,dx,dy){
+	this.type="object";
+	this.x=x || 0;
+	this.y=y || 0;
+	this.dx=dx || 0;
+	this.dy=dy || 0;
+	this.xscale=xscale || 1;
+	this.yscale=yscale || 1;
+	this.getWidth=function(){
+		return 0;
+	}
+	this.getHeight=function(){
+		return 0;
+	}
+	this.spd=0;
+	this.dir=0;
+	this.setspd=function(spd){
+	this.dx=this.dx || 1;
+	this.spd=this.spd || spd;
+	this.dx=this.dx*spd/this.spd;
+	this.dy=this.dy*spd/this.spd;
+	this.spd=spd;
+	}
+	this.setdir=function(dir){
+	this.dx=this.spd*Math.cos(Math.PI/180*this.dir);
+	this.dy=-this.spd*Math.sin(Math.PI/180*this.dir);
+	this.dir=dir;
+	}
+	this.draw=function(){
+	}
+	this.update=function(){
+		this.x=this.x+this.dx;
+		this.y=this.y+this.dy;
+	}
+}
 function checkCur(x,y,w,h){
     return c.scene.curX>=x && c.scene.curX<x+w &&
         c.scene.curY>=y && c.scene.curY<y+h;
