@@ -219,10 +219,12 @@ function drawScr(){
     ctx.fillStyle = "#999999";
     ctx.fillRect(32+selX*32,32+selY*32,32,32);
     ctx.strokeStyle = "#FFFFFF";
+    ctx.fillStyle = "#cccccc";
     ctx.lineWidth = 1;
 ctx.beginPath();
 ctx.arc(48,48,12,0,2*Math.PI);
 ctx.stroke();
+    ctx.fill();
     ctx.strokeStyle = "#FFFFFF";
     ctx.lineWidth = 4;
     ctx.strokeRect(32,32,384,384);
