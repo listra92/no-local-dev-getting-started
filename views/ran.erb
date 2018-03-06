@@ -1,4 +1,19 @@
 <script type="text/javascript">
+function init(){
+}
+</script>
+<style type="text/css">
+body{
+	font-family:"Trebuchet MS";
+	font-size:16px;
+	color:#FFFFFF;
+	background-color:#666666;
+    margin: 0;
+}
+</style>
+  </head>
+  <body onload="init();">
+<script type="text/javascript">
 function random(x){
     return Math.floor(Math.random()*x);
 }
@@ -155,7 +170,10 @@ function start(){
     }
 }
 
-function GObject(x,y,xscale,yscale,dx,dy){
+function GObject(){
+    this.initialize.apply(this, arguments);
+}
+	GObject.prototype.initialize=function(x,y,xscale,yscale,dx,dy){
 	this.type="object";
 	this.x=x || 0;
 	this.y=y || 0;
@@ -165,7 +183,7 @@ function GObject(x,y,xscale,yscale,dx,dy){
 	this.yscale=yscale || 1;
 	this.spd=0;
 	this.dir=0;
-}
+	}
 	GObject.prototype.getWidth=function(){
 		return 0;
 	}
@@ -189,6 +207,15 @@ function GObject(x,y,xscale,yscale,dx,dy){
 	GObject.prototype.update=function(){
 		this.x=this.x+this.dx;
 		this.y=this.y+this.dy;
+	}
+function MyObject(){
+    this.initialize.apply(this, arguments);
+}
+MyObject.prototype = Object.create(GObject.prototype);
+MyObject.prototype.constructor = MyObject;
+	MyObject.prototype.initialize=function(x,y,xscale,yscale,dx,dy){
+	GObject.prototype.initialize.call(this);
+	this.type="myobject";
 	}
 function checkCur(x,y,w,h){
     return c.scene.curX>=x && c.scene.curX<x+w &&
