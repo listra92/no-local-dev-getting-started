@@ -58,7 +58,11 @@ function random(x){
     var myObject;
 function start(){
     var i,j;
-    myObject = new MyObject(256,64,2,2);
+    myObject = [];
+    for(i=0; i<8; i++){
+    myObject.push(new MyObject(33+random(382),33+random(382),
+    1+random(3),1+random(3)));
+}
 }
 
 function GObject(){
@@ -126,10 +130,16 @@ ctx.stroke();
 	GObject.prototype.draw.apply(this, arguments);
 	}
 	MyObject.prototype.update=function(){
-    if(this.x-this.getWidth()/2<=32 || this.x+this.getWidth()/2>=416){
+    if(this.x-this.getWidth()/2<32){
 		this.dx=-this.dx;
     }
-    if(this.y-this.getHeight()/2<=32 || this.y+this.getHeight()/2>=416){
+    if(this.x+this.getWidth()/2>416){
+		this.dx=-this.dx;
+    }
+    if(this.y-this.getHeight()/2<32){
+		this.dy=-this.dy;
+    }
+    if(this.y+this.getHeight()/2>416){
 		this.dy=-this.dy;
     }
 	GObject.prototype.update.apply(this, arguments);
@@ -146,7 +156,9 @@ function update(){
         if(checkCur(32,32,288,288)){
     	}
     }
-    myObject.update();
+    for(var i in myObject){
+    myObject[i].update();
+    }
 }
 
 function clear(){
@@ -156,7 +168,6 @@ function clear(){
 function drawScr(){
     var i,j,p,q;
     i=0;j=0;
-    myObject.draw();
     ctx.fillStyle = "#999999";
     ctx.fillRect(32+selX*32,32+selY*32,32,32);
     ctx.strokeStyle = "#FFFFFF";
@@ -173,6 +184,9 @@ function drawScr(){
 }
 function draw(){
     clear();
+    for(var i in myObject){
+    myObject[i].draw();
+    }
     drawScr();
     for(var obj in c.scene){
         if(c.scene[obj].type=="nyan" || c.scene[obj].type=="star"){
