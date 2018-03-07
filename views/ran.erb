@@ -55,13 +55,17 @@ var guesses;
 function random(x){
     return Math.floor(Math.random()*x);
 }
-    var myObject;
 function start(){
     var i,j;
-    myObject = [];
-    for(i=0; i<8; i++){
-    myObject.push(new MyObject(45+random(370),45+random(370),
+    MyObject.objects = [];
+    MyObject.lastId = 0;
+    for(i=0; i<32; i++){
+    MyObject.objects.push(new MyObject(45+random(370),45+random(370),
     1+random(3),1+random(3)));
+    do{
+		MyObject.objects[MyObject.lastId-1].x=45+random(370);
+		MyObject.objects[MyObject.lastId-1].y=45+random(370);
+    }while(MyObject.objects[MyObject.lastId-1].isCollides());
 }
 }
 
@@ -76,8 +80,8 @@ function GObject(){
 	this.dy=dy || 0;
 	this.xscale=xscale || 1;
 	this.yscale=yscale || 1;
-	this.spd=0;
-	this.dir=0;
+	this.spd=Math.sqrt(this.dx*this.dx+this.dy*this.dy);
+	this.dir=(Math.atan2(-this.dy,this.dx) || 0)*180/Math.PI;
 	}
 	GObject.prototype.getWidth=function(){
 		return 0;
@@ -97,27 +101,82 @@ function GObject(){
 	this.dy=-this.spd*Math.sin(Math.PI/180*this.dir);
 	this.dir=dir;
 	}
-	GObject.prototype.draw=function(){
-	}
 	GObject.prototype.update=function(){
 		this.x=this.x+this.dx;
 		this.y=this.y+this.dy;
+	this.spd=Math.sqrt(this.dx*this.dx+this.dy*this.dy);
+	this.dir=(Math.atan2(-this.dy,this.dx) || 0)*180/Math.PI;
+	}
+	GObject.prototype.draw=function(){
 	}
 
 function MyObject(){
     this.initialize.apply(this, arguments);
 }
+MyObject.objects = [];
+MyObject.lastId = 0;
 MyObject.prototype = Object.create(GObject.prototype);
 MyObject.prototype.constructor = MyObject;
 	MyObject.prototype.initialize=function(x,y,xscale,yscale,dx,dy){
 	GObject.prototype.initialize.apply(this, arguments);
 	this.type="myobject";
+    this.id=MyObject.lastId;
+    MyObject.lastId++;
 	}
-	GObject.prototype.getWidth=function(){
-		return 24;
+	MyObject.prototype.getWidth=function(){
+		return 16*this.xscale;
 	}
-	GObject.prototype.getHeight=function(){
-		return 24;
+	MyObject.prototype.getHeight=function(){
+		return 16*this.yscale;
+	}
+	MyObject.prototype.isCollide=function(theObject){
+    if(this.id!=theObject.id){
+		return (this.x-theObject.x)*(this.x-theObject.x)+
+        (this.y-theObject.y)*(this.y-theObject.y)<
+        (this.getWidth()/2+theObject.getWidth()/2)*
+        (this.getWidth()/2+theObject.getWidth()/2);
+    }
+		return false;
+	}
+	MyObject.prototype.isCollides=function(){
+		var isCol=false;
+    for(var i in MyObject.objects){
+    isCol=isCol || this.isCollide(MyObject.objects[i]);
+    }
+		return isCol;
+	}
+	MyObject.prototype.update=function(){
+    for(var i in MyObject.objects){
+    if(this.isCollide(MyObject.objects[i])){
+		var dist=Math.sqrt((this.x-MyObject.objects[i].x)*
+        (this.x-MyObject.objects[i].x)+(this.y-MyObject.objects[i].y)*
+        (this.y-MyObject.objects[i].y));
+		this.x=MyObject.objects[i].x+(this.x-MyObject.objects[i].x)*
+        (this.getWidth()/2+MyObject.objects[i].getWidth()/2)/dist;
+		this.y=MyObject.objects[i].y+(this.y-MyObject.objects[i].y)*
+        (this.getWidth()/2+MyObject.objects[i].getWidth()/2)/dist;
+		var thedir=(Math.atan2(this.y-MyObject.objects[i].y,
+        MyObject.objects[i].x-this.x) || 0)*180/Math.PI+90;
+		this.setdir(2*thedir-this.dir);
+    }
+    }
+    if(this.x-this.getWidth()/2<32){
+		this.x=32+this.getWidth()/2;
+		this.dx=-this.dx;
+    }
+    if(this.x+this.getWidth()/2>416){
+		this.x=416-this.getWidth()/2;
+		this.dx=-this.dx;
+    }
+    if(this.y-this.getHeight()/2<32){
+		this.y=32+this.getHeight()/2;
+		this.dy=-this.dy;
+    }
+    if(this.y+this.getHeight()/2>416){
+		this.y=416-this.getHeight()/2;
+		this.dy=-this.dy;
+    }
+	GObject.prototype.update.apply(this, arguments);
 	}
 	MyObject.prototype.draw=function(){
     ctx.strokeStyle = "#FFFFFF";
@@ -128,21 +187,6 @@ ctx.arc(this.x,this.y,this.getWidth()/2,0,2*Math.PI);
 ctx.stroke();
     ctx.fill();
 	GObject.prototype.draw.apply(this, arguments);
-	}
-	MyObject.prototype.update=function(){
-    if(this.x-this.getWidth()/2<32){
-		this.dx=-this.dx;
-    }
-    if(this.x+this.getWidth()/2>416){
-		this.dx=-this.dx;
-    }
-    if(this.y-this.getHeight()/2<32){
-		this.dy=-this.dy;
-    }
-    if(this.y+this.getHeight()/2>416){
-		this.dy=-this.dy;
-    }
-	GObject.prototype.update.apply(this, arguments);
 	}
 function checkCur(x,y,w,h){
     return c.scene.curX>=x && c.scene.curX<x+w &&
@@ -156,8 +200,8 @@ function update(){
         if(checkCur(32,32,288,288)){
     	}
     }
-    for(var i in myObject){
-    myObject[i].update();
+    for(var i in MyObject.objects){
+    MyObject.objects[i].update();
     }
 }
 
@@ -184,8 +228,8 @@ function drawScr(){
 }
 function draw(){
     clear();
-    for(var i in myObject){
-    myObject[i].draw();
+    for(var i in MyObject.objects){
+    MyObject.objects[i].draw();
     }
     drawScr();
     for(var obj in c.scene){
