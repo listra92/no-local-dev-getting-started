@@ -1,4 +1,19 @@
 <script type="text/javascript">
+function init(){
+}
+</script>
+<style type="text/css">
+body{
+	font-family:"Trebuchet MS";
+	font-size:16px;
+	color:#FFFFFF;
+	background-color:#666666;
+    margin: 0;
+}
+</style>
+  </head>
+  <body onload="init();">
+<script type="text/javascript">
 function random(x){
     return Math.floor(Math.random()*x);
 }
@@ -59,9 +74,9 @@ function start(){
     var i,j;
     MyObject.objects = [];
     MyObject.lastId = 0;
-    for(i=0; i<32; i++){
+    for(i=0; i<64; i++){
     MyObject.objects.push(new MyObject(45+random(370),45+random(370),
-    1+random(3),1+random(3)));
+    1+random(3),1+random(3),1,1));
     do{
 		MyObject.objects[MyObject.lastId-1].x=45+random(370);
 		MyObject.objects[MyObject.lastId-1].y=45+random(370);
