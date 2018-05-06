@@ -19,6 +19,10 @@ get "/contacts" do
   erb :index
 end
 
+get "/push" do
+  erb :push
+end
+
 get "/sdk" do
   erb :sdk
 end
