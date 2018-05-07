@@ -43,6 +43,12 @@ function init(){
         c.scene.mouseClick = true;
         c.scene.mouseDown = true;
     });
+    Notification.requestPermission(function (e) {
+        alert(e);
+    });
+    e = new Notification("sdf",{
+    body: "sdasda"
+    });
     start();
 	loop();
 }
